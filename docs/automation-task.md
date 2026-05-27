@@ -19,7 +19,6 @@ Sample automated scenarios
 Search feature suite (TC1–TC6)
 Environment configuration
 Reporting & artifacts
-CI/CD
 Quality gates
 Task 1 — Exploratory Analysis
 Submission notes
@@ -36,8 +35,6 @@ tests/
 Executable scenarios (search, cart, checkout, API smoke)
 resources/test-data/
 Externalized JSON for data-driven tests
-.github/workflows/
-CI pipeline (cross-browser matrix)
 playwright.config.ts
 Playwright configuration (projects, reporters, env wiring)
 
@@ -162,7 +159,7 @@ tests/
 Why Playwright + TypeScript?
 Auto-waiting reduces flaky synchronization on a legacy jQuery + Luigi's Box stack.
 Built-in tracing, video, and HAR accelerate triage of intermittent UI issues (e.g. cart recalculation — CH-02.02).
-Native parallelization and multi-browser projects suit CI matrices without extra runners.
+Native parallelization and multi-browser projects suit local cross-browser runs.
 APIRequestContext enables a clean path to hybrid UI + API tests (search-partnr.php, cart.php) per exploratory network findings.
 TypeScript-first aligns with strict typing and senior SDET maintainability expectations.
 
@@ -198,11 +195,11 @@ Single source of truth for @smoke, @regression, @search, etc.
 
 Scalability considerations
 Tag-based execution (@smoke, @regression, @search, @checkout) for pipeline stages.
-Environment profiles (local / ci / staging) without code changes.
+Environment profiles (local / staging) without code changes.
 API layer stub ready for contract tests when JSON schemas are defined.
 Locator strategy isolates DOM churn — update one class instead of every test.
 Parallel-safe tests — no shared state; unique guest emails via factory.
-CI matrix — Chromium + Firefox on Ubuntu with artifact retention.
+Local cross-browser execution — Chromium, Firefox, and WebKit projects.
 
 
 Sample automated scenarios
@@ -294,17 +291,17 @@ BASE_URL
 Application under test
 https://www.skoda-dily.cz
 TEST_ENV
-local | ci | staging
+local | staging
 local
 BROWSER
 Filter projects (chromium / firefox / webkit / all)
 chromium
 WORKERS
 Parallel workers
-4 (local), 2 (CI)
+4
 RETRIES
 Test retries
-0 local / 2 CI
+0
 ACTION_TIMEOUT
 Per-action timeout (ms)
 15000
@@ -316,7 +313,7 @@ Assertion timeout (ms)
 10000
 TRACE
 Playwright trace mode
-on-first-retry in CI
+on-first-retry
 SCREENSHOT
 Screenshot policy
 only-on-failure
@@ -334,7 +331,7 @@ API request timeout (ms)
 30000
 
 
-CI sets CI=true, TEST_ENV=ci, and uploads Playwright + Allure artifacts (see .github/workflows/e2e.yml).
+Reports are written locally to playwright-report/ (HTML) and allure-results/ (Allure).
 
 
 Reporting & artifacts
@@ -347,7 +344,7 @@ Allure — allure-results/ raw data; serve with npm run report:serve or generate
 Artifact
 Policy
 Trace
-on-first-retry (CI), configurable via TRACE
+on-first-retry, configurable via TRACE
 Screenshot
 only-on-failure
 Video
@@ -357,15 +354,6 @@ allure-playwright reporter
 
 
 
-CI/CD
-.github/workflows/e2e.yml runs the suite on every push and PR:
-
-Cross-browser matrix (Chromium + Firefox on Ubuntu).
-Caches npm and Playwright browsers.
-Uploads playwright-report/ and allure-results/ as artifacts on failure.
-Honours TEST_ENV=ci, CI=true (2 retries, 2 workers, tracing on first retry).
-
-
 Quality gates
 npm run typecheck      # strict TypeScript compilation
 
@@ -373,7 +361,7 @@ npm run lint           # ESLint (flat config)
 
 npm run format:check   # Prettier verification
 
-CI runs all three before executing tests — code that doesn't typecheck never reaches the runner.
+Run these locally before pushing to keep the codebase clean.
 
 
 Test tagging
@@ -384,9 +372,6 @@ test.describe('Search Feature - Valid', { tag: [Tags.SEARCH, Tags.REGRESSION] },
 Run subsets:
 
 npm run test:smoke
-
-npx playwright test --grep @checkout
-
 npx playwright test --grep "@search.*@regression"
 
 

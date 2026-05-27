@@ -35,7 +35,7 @@ Total: 33 defects + 10 recommendations across P0 → P3 priorities.
 Task 2 — Automation task
 See docs/automation-task.md.
 
-Stack: Playwright + TypeScript, Page Object Model, fixture-based DI, tag-driven execution, Allure + HTML reporting, GitHub Actions CI matrix.
+Stack: Playwright + TypeScript, Page Object Model, fixture-based DI, tag-driven execution and Allure + HTML reporting.
 
 Primary command for reviewers:
 
@@ -61,7 +61,7 @@ npx playwright test tests/search
 
 npm test
 
-Full setup, environment variables, tag filters, reporting, and CI details are in docs/automation-task.md.
+Full setup, environment variables, tag filters, reporting are in docs/automation-task.md.
 
 
 🗂️ Repository structure (top level)
@@ -79,7 +79,6 @@ Full setup, environment variables, tag filters, reporting, and CI details are in
 
 ├── resources/test-data/         # JSON fixtures for data-driven tests
 
-├── .github/workflows/           # CI pipeline (cross-browser matrix)
 
 ├── playwright.config.ts
 
