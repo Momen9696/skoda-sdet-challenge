@@ -1,0 +1,22 @@
+[
+  {
+    "id": "valid-part",
+    "query": "1K0615301AA",
+    "description": "OEM-style part number should return catalog matches",
+    "expectResults": true,
+    "minResultCount": 1
+  },
+  {
+    "id": "valid-generic",
+    "query": "brake pad",
+    "description": "Generic term should surface relevant products",
+    "expectResults": true,
+    "minResultCount": 1
+  },
+  {
+    "id": "nonsense-term",
+    "query": "zzzznonexistentpart99999",
+    "description": "Unknown term should not fabricate misleading product hits",
+    "expectResults": false
+  }
+]

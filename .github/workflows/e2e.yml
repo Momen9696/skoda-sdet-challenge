@@ -1,0 +1,75 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.project }}
+
+      - name: Run smoke tests (PR)
+        if: github.event_name == 'pull_request'
+        env:
+          CI: true
+          TEST_ENV: ci
+          RETRIES: 2
+          WORKERS: 2
+        run: npx playwright test --project=${{ matrix.project }} --grep @smoke
+
+      - name: Run smoke + regression (main / manual)
+        if: github.event_name != 'pull_request'
+        env:
+          CI: true
+          TEST_ENV: ci
+          RETRIES: 2
+          WORKERS: 2
+        run: npx playwright test --project=${{ matrix.project }} --grep "@smoke|@regression"
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.project }}
+          path: allure-results/
+          retention-days: 14
+
+      - name: Upload test traces (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.project }}
+          path: test-results/
+          retention-days: 7
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "### E2E Run — ${{ matrix.project }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Event: \`${{ github.event_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Allure results uploaded as artifact: \`allure-results-${{ matrix.project }}\`" >> $GITHUB_STEP_SUMMARY
